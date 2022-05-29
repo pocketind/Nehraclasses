@@ -1,0 +1,103 @@
+    1  lsblk
+    2  clear
+    3  lsblk
+    4  clear
+    5  fdisk -l /dev/sdb
+    6  clear
+    7  fdisk /dev/sdb
+    8  partprobe 
+    9  clear
+   10  lsblk
+   11  clear
+   12  pvcreate /dev/sdb1
+   13  clear
+   14  vgs
+   15  vgdisplay 
+   16  clear
+   17  vgcreate -s 32M vg_thin /dev/sdb1
+   18  vgs
+   19  clear
+   20  vgdisplay vg_thin 
+   21  clear
+   22  lvs
+   23  clear
+   24  lvcreate -L 15G --thinpool tp_nehraclasses_pool vg_thin
+   25  lvs
+   26  clear
+   27  lvs
+   28  clear
+   29  lvs
+   30  clear
+   31  lsblk
+   32  clear
+   33  lvdisplay vg_thin/tp_nehraclasses_pool
+   34  clear
+   35  lvcreate -V 5G --thin -n thin_vol_client1 vg_thin/tp_nehraclasses_pool
+   36  lvs
+   37  clear
+   38  lvcreate -V 5G --thin -n thin_vol_client2 vg_thin/tp_nehraclasses_pool
+   39  lvs
+   40  clear
+   41  lvcreate -V 5G --thin -n thin_vol_client3 vg_thin/tp_nehraclasses_pool
+   42  lvs
+   43  clear
+   44  mkdir -p /mnt/client1 /mnt/client2 /mnt/client3
+   45  ll /mnt
+   46  clear
+   47  mkfs.ext4 /dev/vg_thin/thin_vol_client1 && mkfs.ext4 /dev/vg_thin/thin_vol_client2 && mkfs.ext4 /dev/vg_thin/thin_vol_client3
+   48  clear
+   49  lsblk -f
+   50  clear
+   51  mount /dev/vg_thin/thin_vol_client1 /mnt/client1/ && mount /dev/vg_thin/thin_vol_client2 /mnt/client2/ && mount /dev/vg_thin/thin_vol_client3 /mnt/client3/
+   52  clear
+   53  df -hT
+   54  clear
+   55  cd /mnt/client1
+   56  ll
+   57  dd if=/dev/zero of=/mnt/client1/file.txt bs=1024M count=4
+   58  clear
+   59  ll
+   60  ls -lh
+   61  clear
+   62  lvs
+   63  clear
+   64  cd /mnt/client2
+   65  dd if=/dev/zero of=/mnt/client1/file.txt bs=1024M count=2
+   66  ls -lh
+   67  clear
+   68  dd if=/dev/zero of=/mnt/client2/file.txt bs=1024M count=2
+   69  ls -lh
+   70  cd /mnt/client1
+   71  clear
+   72  ls -lh
+   73  clear
+   74  cd /mnt/client3
+   75  dd if=/dev/zero of=/mnt/client3/file.txt bs=1024M count=2
+   76  clear
+   77  cd
+   78  vgs
+   79  lvs
+   80  clear
+   81  lvcreate -V 5G --thin -n thin_vol_client4 vg_thin/tp_nehraclasses_pool
+   82  clear
+   83  lvs
+   84  clear
+   85  lvextend -L +15G /dev/vg_thin/tp_nehraclasses_pool
+   86  clear
+   87  lsblk
+   88  clear
+   89  fdisk /dev/sdb
+   90  partprobe 
+   91  clear
+   92  pvcreate /dev/sdb2
+   93  pvs
+   94  clear
+   95  vgextend vg_thin /dev/sdb2
+   96  vgs
+   97  clear
+   98  lvextend -L +15G /dev/vg_thin/tp_nehraclasses_pool
+   99  vgs
+  100  clear
+  101  lvs
+  102  clear
+  103  history > history_session39.txt

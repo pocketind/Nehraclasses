@@ -1,0 +1,212 @@
+    1  clear
+    2  cat /etc/fstab 
+    3  clear
+    4  clear
+    5  lsblk
+    6  clear
+    7  lsblk
+    8  clear
+    9  fdisk -l /dev/sda
+   10  clear
+   11  fdisk /dev/sda
+   12  partprobe /dev/sda
+   13  clear
+   14  lsblk
+   15  clear
+   16  pvs
+   17  pvdisplay 
+   18  clear
+   19  lsblk
+   20  clear
+   21  pvcreate /dev/sda1
+   22  pvs
+   23  pvdisplay 
+   24  clear
+   25  vgcreate LinuxVG /dev/sda1
+   26  clear
+   27  vgs
+   28  vgdisplay 
+   29  clear
+   30  lvcreate -L 3G -n LinuxLV LinuxVG 
+   31  clear
+   32  lvcreate -L 2000M -n LinuxLV LinuxVG 
+   33  lvs
+   34  clear
+   35  lvdisplay 
+   36  clear
+   37  lsblk
+   38  lsblk -f
+   39  clear
+   40  mkdir /testdir
+   41  mount /dev/LinuxVG/LinuxLV /testdir/
+   42  clear
+   43  mkfs.ext4 /dev/mapper/LinuxVG-LinuxLV 
+   44  clear
+   45  blkid /dev/LinuxVG/LinuxLV
+   46  clear
+   47  mount /dev/LinuxVG/LinuxLV /testdir/
+   48  df -Th
+   49  clear
+   50  cd /testdir/
+   51  touch test{1..100}
+   52  ls
+   53  clear
+   54  cal > cal.txt
+   55  cat cal.txt 
+   56  clear
+   57  lsblk
+   58  cd
+   59  clear
+   60  umount /testdir 
+   61  clear
+   62  mount /dev/LinuxVG/LinuxLV /mnt
+   63  cd /mnt
+   64  ll
+   65  clear
+   66  cd
+   67  umount /mnt
+   68  clear
+   69  vgs
+   70  clear
+   71  lsblk
+   72  clear
+   73  vgextend LinuxVG /dev/sda2
+   74  clear
+   75  vgs
+   76  clear
+   77  lvextend -L +2G /dev/LinuxVG/LinuxLV 
+   78  lvs
+   79  clear
+   80  resize2fs /dev/LinuxVG/LinuxLV 
+   81  clear
+   82  ls -l /dev/mapper/LinuxVG-LinuxLV 
+   83  ls -l /dev/LinuxVG/LinuxLV 
+   84  cd /dev/LinuxVG
+   85  ls
+   86  cd LinuxLV
+   87  ll
+   88  clear
+   89  ls -ld 
+   90  ll
+   91  clear
+   92  cd
+   93  clear
+   94  lsblk
+   95  clear
+   96  umount /dev/LinuxVG/LinuxLV
+   97  clear
+   98  lsblk
+   99  clear
+  100  lvremove /dev/LinuxVG/LinuxLV 
+  101  lvs
+  102  clear
+  103  vgremove LinuxVG 
+  104  vgs
+  105  clear
+  106  pvremove /dev/sda1
+  107  pvremove /dev/sda2
+  108  clear
+  109  lsblk
+  110  clear
+  111  fdisk /dev/sda
+  112  partprobe 
+  113  clear
+  114  lsblk
+  115  clear
+  116  init 0
+  117  fdisk /dev/sda
+  118  partprobe 
+  119  lsblk
+  120  fdisk /dev/nvme0n2
+  121  partprobe 
+  122  clear
+  123  pvcreate /dev/sda1
+  124  vgcreate Nehra /dev/sda1
+  125  lvcreate -L 2G -n Vikas Nehra 
+  126  mkfs.ext4 /dev/Nehra/Vikas 
+  127  mount /dev/Nehra/Vikas /testdir/
+  128  cd /testdir/
+  129  touch {1..20}
+  130  ll
+  131  clear
+  132  lvextend -L 4G /dev/Nehra/Vikas 
+  133  lvs
+  134  df
+  135  df-h
+  136  df -h
+  137  resize2fs /testdir/
+  138  clear
+  139  resize2fs /dev/Nehra/Vikas 
+  140  df -hT
+  141  cd
+  142  umount /testdir 
+  143  fsck -f /dev/Nehra/Vikas
+  144  resize2fs -p /dev/Nehra/Vikas 3G
+  145  fsck -f /dev/Nehra/Vikas
+  146  mount /dev/Nehra/Vikas /testdir/
+  147  cd /testdir/
+  148  ll
+  149  clear
+  150  cd
+  151  umount /testdir 
+  152  lvextend -L 5000M /dev/Nehra/Vikas -r
+  153  df
+  154  lvs
+  155  fsck -f /dev/Nehra/Vikas
+  156  resize2fs -p /dev/Nehra/Vikas 3G
+  157  lvreduce -L 3G /dev/Nehra/Vikas 
+  158  resize2fs -p /dev/Nehra/Vikas 3G
+  159  fsck -f /dev/Nehra/Vikas
+  160  mount /dev/Nehra/Vikas /testdir/
+  161  cd /testdir/
+  162  ll
+  163  clear
+  164  cd
+  165  lvextend -L 5000M /dev/Nehra/Vikas -r
+  166  df -h
+  167  cd
+  168  lsblk
+  169  vgextend Nehra /dev/nvme0n2p1
+  170  vgs
+  171  mkfs.xfs /dev/Nehra/Vikas 
+  172  mkfs.xfs /dev/Nehra/Vikas -f
+  173  lvremove /dev/Nehra/Vikas 
+  174  umount /testdir 
+  175  lvremove /dev/Nehra/Vikas 
+  176  lvcreate -L 100%FREE -n Vikas Nehra 
+  177  lvcreate 100%FREE -n Vikas Nehra 
+  178  lvcreate -L 100% -n Vikas Nehra 
+  179  lvcreate -L --size 100% -n Vikas Nehra 
+  180  lvcreate -L --size 100%FREE -n Vikas Nehra 
+  181  clear
+  182  man lvcreate 
+  183  lvcreate -L 10G -n Vikas Nehra
+  184  mkfs.xfs /dev/Nehra/Vikas 
+  185  mount /dev/Nehra/Vikas /tes
+  186  mount /dev/Nehra/Vikas /testdir/
+  187  cd /testdir/
+  188  touch {1..20}
+  189  ll
+  190  clear
+  191  vgs
+  192  df
+  193  clear
+  194  df -h
+  195  lvextend -L +3G /dev/Nehra/Vikas
+  196  lvs
+  197  df -h
+  198  xfs_growfs /testdir/
+  199  clear
+  200  df -h
+  201  lvs
+  202  vgs
+  203  clear
+  204  lvextend -L +2G /dev/Nehra/Vikas -r
+  205  lvextend -L +1G /dev/Nehra/Vikas -r
+  206  df -h
+  207  cd
+  208  umount /testdir 
+  209  fsck -f /dev/Nehra/Vikas
+  210  resize2fs -p /dev/Nehra/Vikas 3G
+  211  init 0
+  212  history >history_session32

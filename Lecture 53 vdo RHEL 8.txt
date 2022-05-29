@@ -1,0 +1,45 @@
+Create a VDO Volume On a Storage Device on RHEL 8:
+++++++++++++++++++++++++++++++++++++++++++
+Introduced by RedHat in RHEL 7.5 and later, VDO short for Virtual Date Optimizer is a block virtualization technology that provides inline deduplication and compression of data at a block device level. The idea of deduplication is quite simple: to remove copies of duplicate data and only remain with one copy. When an identical file is added on a block device, it is marked as a duplicate and the original file is referenced instead. In so doing, VDO helps is saving the block volume’s space.
+
+In this tutorial, you will learn how to create a VDO volume on a storage device on the RHEL 8 system.
+
+Step 1: Install the VDO in RHEL 8
+To get started, log in to your server and update your RHEL using the dnf command.
+  dnf update -y
+  dnf install kmod-kvdo vdo
+  systemctl start vdo
+  systemctl enable vdo
+  systemctl status vdo
+  lsblk
+  vdo create --name=vdo1 --device=/dev/xvdb --vdoLogicalSize=300G
+  reboot
+  vdo create --name=vdo1 --device=/dev/xvdb --vdoLogicalSize=300G
+
+create – This initiates the creation of the VDO volume.
+
+–name=vdo1 – This gives the volume a label known as vdo1. Feel free to assign any name of your choice.
+
+–device=/dev/xvdb – The device option specifies the disk on which the volume will be created.
+
+–vdoLogicalSize=300G – This indicates the effective volume capacity to be used by the operating system, in this case, 300G.
+
+ ls -l /dev/mapper/vdo1
+ vdostats --hu
+ vdostats --verbose /dev/mapper/vdo1 | grep -B6 ‘saving percent’
+ pvcreate /dev/mapper/vdo1
+ vgcreate vdo1vg /dev/mapper/vdo1
+ vgdisplay vdo1vg
+ lvcreate -n vdo1v01 -L 50G vdo1vg
+ lvcreate -n vdo1v02 -L 50G vdo1vg  
+ lvs
+ mkfs.xfs  -K /dev/vdo1vg/vdo1v01
+ mkfs.xfs  -K /dev/vdo1vg/vdo1v02
+ mkdir /data/v01
+ mkdir /data/v02
+ mount -o discard /dev/vdo1vg/vdo1v01  /data/v01
+ mount -o discard /dev/vdo1vg/vdo1v02  /data/v02
+ vdostats --hu
+ df -hT
+
+In this tutorial, we demonstrated how you can create a VDO volume from an additional storage device on RHEL 8. We later went ahead and demonstrated how you can create more volumes and create filesystems from those volumes.

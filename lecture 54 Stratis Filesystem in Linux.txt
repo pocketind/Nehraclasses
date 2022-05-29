@@ -1,0 +1,172 @@
+Stratis Description
+Stratis is a tool to easily configure pools and filesystems with enhanced storage functionality that works within the existing Linux storage management stack. 
+To achieve this, Stratis prioritizes a straightforward command-line experience, a rich API, and a fully automated approach to storage management. 
+It builds upon elements of the existing storage stack as much as possible. Specifically, Stratis uses device-mapper, LUKS, XFS, and Clevis. 
+Stratis may also incorporate additional technologies in the future.
+
+How to Install Stratis to Manage Layered Local Storage on RHEL 8:
+
+Stratis is one of the new features that ships with RHEL 8 distribution. It uses the XFS file system and grants you access to advanced storage capabilities such as:
+
+Thin provisioning
+File system snapshots
+Tiering
+Pool-based management
+Monitoring
+
+Let’s see how you can install Stratis on your RHEL 8 system, log in as root user and run the command.
+# dnf install stratisd stratis-cli -y
+
+To find more information about the installed packages run the command.
+# rpm -qi stratisd stratis-cli
+
+After the successful installation of Stratis, start the service by running the command.
+# systemctl enable --now stratisd
+
+To check the status of Stratis, run the command.
+# systemctl status stratisd
+
+Create a Stratis Pool
+To create a Stratis pool you need block devices that are not in use or mounted. Also, it is assumed that Stratisd service is up and running. Additionally, the block devices that you are going to use need to be at least 1 GB in size.
+# lsblk
+
+None of these block devices should have a partition table. You can confirm this using the command.
+# blkid -p /dev/sdb
+
+If you get no output, then it means that your block devices do not have any partition table residing on them. However, in the event that a partition table exists, you can wipe it using the command:
+# wipefs -a /dev/sdb
+
+Create a Stratis Pool from One Block Device
+# stratis pool create my_pool_1 /dev/sdb
+
+# lsblk
+
+To confirm the created pool run.
+# stratis pool list
+
+Create a Stratis Pool from Multiple Block Devices
+# stratis pool create my_pool_2 /dev/sdc /dev/sdd/ /dev/sde
+
+Once again, list the pools available using the command.
+# stratis pool list
+
+At this point, you should have 2 pools: my_pool_1 and my_pool_2.
+
+Create a Filesystem from a Pool
+For instance, to create filesystem-1 and filesystem-2 from my_pool_1 and my_pool_2 respectively run commands:
+# stratis fs create my_pool_1 filesystem-1
+# stratis fs create my_pool_2 filesystem-2
+
+To view the newly created filesystems, run the command.
+# stratis fs list
+
+Now, if you run the lsblk command, the output should be somewhat similar to the sample output below.
+# lsblk -f
+
+Mounting a Stratis Filesystem
+For the filesystem in the first pool, run the command:
+# mkdir /data
+# mount /dev/stratis/my_pool_1/filesystem-1 /data
+
+For the second filesystem in the second pool, run the command.
+# mkdir /block
+# mount /dev/stratis/my_pool_2/filesystem-2 /block
+
+To verify the existence of the current mount points run df command:
+# df -Th | grep  stratis
+
+Perfect! We can clearly see that our mount points are present.
+
+Persistently Mount Stratis Filesystems
+The mount points that we have just created cannot survive a reboot. To make them persistent, first obtain the UUID of each of the filesystems:
+# blkid -p /dev/stratis/my_pool_1/filesystem-1
+# blkid -p /dev/stratis/my_pool_2/filesystem-2
+
+And make an entry in /etc/fstab with these UUIDs.
+/dev/stratis/my_pool_1/filesystem-1     /data   xfs     defaults        0 0
+
+Removing a Stratis Filesystem
+To remove a filesystem, you need to, first of all, unmount the file system as shown.
+# umount /data
+
+To destroy the filesystem, use the syntax:
+# stratis filesystem destroy my_pool_1 filesystem-1
+
+To confirm the removal of the filesystem, issue the command.
+# stratis filesystem list my_pool_1
+
+# stratis filesystem list
+
+From the output, we can clearly see that the filesystem associated with my_pool_1 has been deleted.
+
+Adding a Disk to an Existing Stratis Pool
+# stratis pool add-data my_pool_1 /dev/sdf
+
+# lsblk -f
+
+Notice that the size of my_pool_1 has double in size after adding the extra volume.
+
+Create Stratis Snapshots
+
+Copy some data on filesystem first.
+# cd /block
+
+# cal > cal.txt ; mkdir aa bb cc dd ; echo Nehra Classes are awesome > nehra.txt
+
+# du -sh .
+
+A snapshot is a thinly provisioned read and writes a copy of a filesystem at a given point in time.
+# stratis fs snapshot my_pool_2 filesystem-2 mysnapshot
+
+Remove all the data after taking snapshot.
+# rm -rf *
+
+# cd
+
+To verify the creation of the snapshot, run the command:
+# stratis filesystem list my_pool_2
+
+To revert a Stratis filesystem to a previously created snapshot, first, unmount and destroy the original filesystem.
+# umount /dev/stratis/my_pool_2/filesystem-2
+
+Then create a copy of the snapshot using the original file system:
+# stratis filesystem snapshot my_pool_2 mysnapshot block
+
+Finally, mount the snapshot.
+# mount /dev/stratis/my_pool_2/mysnapshot /block
+
+# cd /block
+
+Verify the data which you deleted earlier.
+# ls
+
+# du -sh .
+
+Removing a Stratis Snapshot
+# rm /dev/stratis/my_pool_2/mysnapshot
+
+Next, proceed and destroy the snapshot:
+# stratis filesystem destroy my_pool_2 mysnapshot
+
+To remove a Stratis pool, follow the simple steps below.
+
+1. List the filesystems that exist in the pool.
+# stratis filesystem list (poolname)
+
+2. Next, unmount all the filesystems in the pool.
+# umount /block
+
+3. Destroy the filesystems.
+# stratis filesystem destroy my_pool_2 mysnapshot
+
+4. And then, get rid of the pool.
+# stratis pool destroy my_pool_2
+
+# lsblk -f
+
+# stratis pool destroy my_pool_1
+
+You can verify the pool list again.
+# stratis pool list
+
+Finally, remove the entries in the /etc/fstab for the filesystems.

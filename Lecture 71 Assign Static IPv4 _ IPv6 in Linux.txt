@@ -1,0 +1,121 @@
+Assigning IPv4:
+
+# nmcli dev status
+
+# nmcli connection show
+
+# nmcli connection add type ethernet con-name ens256 ifname ens256 ipv4.addresses 192.168.0.145/24 ipv4.dns 8.8.8.8 gw4 192.168.0.1 ipv4.method manual
+
+OR run this command if ens256 already present.
+
+# nmcli connection modify ens256 ipv4.addresses 192.168.0.145/24 ipv4.method manual
+
+# cd /etc/sysconfig/network-scripts/
+
+# ls
+
+# cat ifcfg-ens256
+
+# nmcli connection up ens256
+
+OR
+
+# ifup ens256
+
+# nmcli connection reload
+
+# ip a
+
+# ifconfig
+
+# ping 192.168.0.145 
+
+To set multiple static IPv4 or DNS on same NIC:
+
+# nmcli connection modify ens256 +ipv4.addresses 192.168.0.155/24 +ipv4.dns 8.8.4.4
+
+OR edit connection file using vi editor and mention multiple IPv4 addressses there, you can add multiple DNS also.
+
+# cat ifcfg-ens256
+
+# nmcli connection up ens256
+
+#  ip a
+
+To remove static IPv4 or DNS:
+
+# nmcli connection modify ens256 -ipv4.addresses 192.168.0.155/24 -ipv4.dns 8.8.4.4
+
+# cat ifcfg-ens256
+
+# nmcli connection up ens256
+
+#  ip a
+
+You can use nmtui also to add or edit a connection and to set IPv4, DNS, gateway etc.
+
+# nmtui
+
+# nmcli connection up ens256
+
+#  ip a
+
+You can also use GUI or edit connection file /etc/sysconfig/network-scripts/ directory to set/remove/edit these details.
+
+To delete the connection & to remove connection file execute below command.
+
+# nmcli connection delete ens256
+
+# ls
+
+--------------
+
+Assigning IPv6:
+
+Either static hostname or IPv4 must be set already.
+
+# hostnamectl set-hostname nehraclasses.local
+
+# hostnamectl
+
+# nmcli dev status
+
+# nmcli connection show
+
+# nmcli connection add type ethernet con-name ens256 ifname ens256
+
+# nmcli connection modify ens256 ipv6.addresses 'fddb:fe2a:ad1e::c0a8:8/64' ipv6.method manual
+
+# nmcli connection up ens256
+
+OR
+
+# ifup ens256
+
+# nmcli connection reload
+
+# systemctl restart NetworkManager
+
+# ip a
+
+# ifconfig
+
+# ping fddb:fe2a:ad1e::c0a8:8
+
+IPv6 must be configured in the network.
+
+ping -6 fddb:fe2a:ad1e::c0a8:8
+
+# nmcli connection delete ens256
+
+--------------
+
+To delete the network adaptor device (if it is a software device only) you can use below command.
+
+# nmcli device delete ens256
+
+--------------
+The Google Public DNS IPv6 addresses are as follows:
+
+2001:4860:4860::8888
+2001:4860:4860::8844

@@ -1,0 +1,115 @@
+NIC Teaming:
+------------
+
+NIC teaming is the concept of combining or bonding 2 or more network interfaces into one logical interface to provide high throughput and redundancy. 
+This practice is popular especially with critical servers where high availability is expected at all times. In a server with 2 or more NIC cards,
+the concept of NIC teaming is critical in the event where one NIC card fails. With NIC teaming, the logical network interface will ensure that the
+remaining NIC will continue functioning and serving the purpose of the defective NIC. In this guide, we take you through the configuration of NIC teaming in CentOS 8 and RHEL 8.
+
+Let’s take a look at some of the concepts around
+
+
+Teamd –  This is a daemon that allows you to configure a team network interface.  Teamd is a part of the libteam project and leverages the libteam library for implementation of load balancing and round-robin logic.
+Teamdctl  – This is a utility tool for querying an instance of teamd for configuration information and detailed statistics.
+Runners – These are distinct units of code in JSON format used for implementing different concepts of NIC teaming such as Round robbin
+
+Runners exist in the following modes:
+Round-robin: In this mode, data is transmitted across all ports in turn.
+Broadcast: Here data is transmitted across all ports.
+Load-balance: Traffic is distributed across all NICs.
+Active-backup: Where one link or port is activated as the rest are reserved as a backup. This is used for failover to provide redundancy as we shall later see in this guide.
+Lacp: Uses the the 802.3ad Protocol for link aggregation
+
+# dnf install -y teamd
+
+# rpm -qa | grep teamd
+
+# nmcli dev status
+
+Add two NICs in machine.
+
+# nmcli dev status
+
+# nmcli connection show
+
+# cd /etc/sysconfig/network-scripts/
+
+# ls
+
+Create NIC Team Connection.
+
+# nmcli connection add type team con-name team0 ifname team0 config '{"runner":{"name": "activebackup"}}'
+
+# ls
+
+# nmcli connection show
+
+# cat ifcfg-team0
+
+# nmcli connection modify team0 ipv4.addresses 192.168.227.140/24 ipv4.dns 8.8.8.8 connection.autoconnect yes ipv4.method manual
+
+Add devices to NIC Teaming Connection.
+
+# nmcli connection add type team-slave con-name team0-port1 ifname ens224 master team0
+
+# ls
+
+# cat ifcfg-team0-port1
+
+# nmcli connection add type team-slave con-name team0-port2 ifname ens256 master team0
+
+# ls
+
+# cat ifcfg-team0-port2
+
+# nmcli dev status
+
+# nmcli connection reload
+
+# nmcli connection up team0
+
+# nmcli connection up team0-port1
+
+# nmcli connection up team0-port2
+
+# ip a
+
+# teamdctl team0 state
+
+# ping 192.168.0.135 #(check from other machine)
+
+Test NIC Teaming.
+
+Bring down one NIC to test it.
+
+# nmcli connection down team0-port1
+
+# teamdctl team0 state
+
+# ping 192.168.0.135 #(check from other machine)
+
+# nmcli connection up team0-port1
+
+# teamdctl team0 state
+
+# nmcli connection down team0-port2
+
+# teamdctl team0 state
+
+# ping 192.168.0.135 #(check from other machine)
+
+# nmcli connection up team0-port2
+
+# teamdctl team0 state
+
+# nmcli connection down team0-port1
+
+# teamdctl team0 state
+
+# nmcli connection down team0-port2
+
+# teamdctl team0 state
+
+# nmcli connection down team0
+
+# ping 192.168.0.135 #(check from other machine)

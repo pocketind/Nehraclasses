@@ -1,0 +1,284 @@
+    1  ip a
+    2  cat /etc/fstab 
+    3  clear
+    4  lsblk
+    5  clear
+    6  fdisk -l /dev/sda
+    7  clear
+    8  fdisk /dev/sda
+    9  partprobe 
+   10  clear
+   11  lsblk
+   12  clear
+   13  pvcreate /dev/sda1 /dev/sda2
+   14  clear
+   15  pvs
+   16  clear
+   17  vgcreate vg1 /dev/sda1
+   18  vgcreate vg2 /dev/sda2
+   19  vgs
+   20  clear
+   21  lvcreate -l 1000 lv1 vg1
+   22  clear
+   23  lvcreate -l 1000 -n lv1 vg1
+   24  lvs
+   25  clear
+   26  vgdisplay 
+   27  clear
+   28  lvcreate -l 1000 -n lv2 vg2
+   29  lvs
+   30  clear
+   31  mkfs.ext4 /dev/vg1/lv1 
+   32  clear
+   33  mkfs.xfs /dev/vg2/lv2 
+   34  clear
+   35  lsblk -f
+   36  clear
+   37  mkdir /test1
+   38  mkdir /test2
+   39  clear
+   40  mount /dev/vg1/lv1 /test1
+   41  mount /dev/vg2/lv2 /test2
+   42  clear
+   43  df -hT
+   44  clear
+   45  cd /test1
+   46  touch {1..10}
+   47  ll
+   48  clear
+   49  cal > cal.txt
+   50  cat cal.txt 
+   51  mkdir aa bb cc dd
+   52  clear
+   53  ll
+   54  clear
+   55  cd /test2
+   56  touch {11..20}
+   57  ll
+   58  clear
+   59  cal > cal.txt
+   60  cat cal.txt 
+   61  clear
+   62  mkdir ee ff gg hh
+   63  ll
+   64  clear
+   65  cd
+   66  clear
+   67  umount /test*
+   68  df -hT
+   69  clear
+   70  lvscan 
+   71  clear
+   72  vgchange -an vg2
+   73  lvscan 
+   74  clear
+   75  vgs
+   76  lvs
+   77  clear
+   78  vgmerge vg1 vg2
+   79  vgs
+   80  clear
+   81  lvs
+   82  clear
+   83  lvscan 
+   84  clear
+   85  lvchange -ay /dev/vg1/lv2
+   86  lvscan 
+   87  clear
+   88  lsblk 
+   89  clear
+   90  mount /dev/vg1/lv1 /test1
+   91  mount /dev/vg1/lv2 /test2
+   92  df -hT
+   93  clear
+   94  cd /test1
+   95  ll
+   96  cat cal.txt 
+   97  clear
+   98  cd /test2
+   99  ll
+  100  clear
+  101  cat cal.txt 
+  102  clear
+  103  cd
+  104  umount /test*
+  105  clear
+  106  df -hT
+  107  clear
+  108  pvs
+  109  clear
+  110  vgchange -an vg1
+  111  lvscan
+  112  clear
+  113  vgs
+  114  lvs
+  115  clear
+  116  vgsplit vg1 vg2 /dev/sda2
+  117  vgs
+  118  clear
+  119  lvscan 
+  120  clear
+  121  vgchange -ay vg1 vg2
+  122  lvscan 
+  123  clear
+  124  mount /dev/vg1/lv1 /test1
+  125  mount /dev/vg2/lv2 /test2
+  126  df -hT
+  127  clear
+  128  cd /test1
+  129  ll
+  130  clear
+  131  cat cal.txt 
+  132  clear
+  133  cd /test2
+  134  ll
+  135  cat ca
+  136  cat cal.txt 
+  137  clear
+  138  cd
+  139  lsblk
+  140  clear
+  141  vgcfgrestore --list
+  142  vgcfgrestore --l
+  143  clear
+  144  cd /etc/lvm/archive/
+  145  ll
+  146  clear
+  147  vgcfgrestore --list vg1
+  148  clear
+  149  vgcfgrestore --list vg2
+  150  clear
+  151  cd 
+  152  init 0
+  153  lsblk
+  154  lvremove /dev/vg*
+  155  lsblk
+  156  vgremove vg* -y
+  157  vgremove vg* 
+  158  vgremove vg1
+  159  vgremove vg2
+  160  pvremove /dev/sda*
+  161  lsblk
+  162  fdisk /dev/sda
+  163  partprobe 
+  164  init 0
+  165  history > history_session36.txt
+  166  clear
+  167  lsblk
+  168  clear
+  169  lsblk
+  170  clear
+  171  fdisk -l /dev/sda
+  172  fdisk -l /dev/sdb
+  173  clear
+  174  fdisk /dev/sda
+  175  partprobe 
+  176  clear
+  177  lsblk
+  178  clear
+  179  pvcreate /dev/sda1
+  180  pvs
+  181  clear
+  182  vgcreate dataVG /dev/sda1
+  183  vgs
+  184  clear
+  185  lvcreate -l 1000 -n dataLV dataVG
+  186  clear
+  187  lsblk
+  188  clear
+  189  mkfs.ext4 /dev/dataVG/dataLV 
+  190  clear
+  191  mkdir /data
+  192  mount /dev/dataVG/dataLV /data/
+  193  df -hT
+  194  clear
+  195  cd /data/
+  196  touch {a..z}
+  197  ll
+  198  clear
+  199  mkdir aa bb cc dd
+  200  cal > cal.txt
+  201  echo NehraClasses Are Awesome > nehra.txt
+  202  clear
+  203  ll
+  204  clear
+  205  md5sum nehra.txt 
+  206  clear
+  207  lsblk
+  208  cd
+  209  clear
+  210  fdisk -l /dev/sdb
+  211  clear
+  212  fdisk /dev/sdb
+  213  partprobe 
+  214  clear
+  215  lsblk
+  216  clear
+  217  pvcreate /dev/sdb1
+  218  pvs
+  219  clear
+  220  vgextend dataVG /dev/sdb1
+  221  vgs
+  222  clear
+  223  ls -l /dev/ | grep sd
+  224  dmsetup deps /dev/dataVG/dataLV 
+  225  clear
+  226  pvmove -n dataLV /dev/sda1 /dev/sdb2
+  227  pvmove -n dataLV /dev/sda1 /dev/sdb1
+  228  clear
+  229  lsblk
+  230  clear
+  231  pvs
+  232  clear
+  233  vgreduce dataVG /dev/sda1
+  234  df -hT
+  235  clear
+  236  cd /data/
+  237  ll
+  238  clear
+  239  cat c
+  240  cat cal.txt 
+  241  cat nehra.txt 
+  242  clear
+  243  md5sum nehra.txt 
+  244  clear
+  245  cd
+  246  clear
+  247  lsblk
+  248  clear
+  249  lsblk 
+  250  clear
+  251  fdisk /dev/nvme0n2
+  252  partprobe 
+  253  clear
+  254  lsblk
+  255  clear
+  256  pvcreate /dev/nvme0n2p1 
+  257  pvs
+  258  clear
+  259  vgs
+  260  lvs
+  261  clear
+  262  lsblk
+  263  clear
+  264  vgextend cs /dev/nvme0n2p1
+  265  vgs
+  266  clear
+  267  pvmove -n root /dev/nvme0n1p2 /dev/nvme0n2p1
+  268  clear
+  269  lsblk
+  270  clear
+  271  pvmove -n swap /dev/nvme0n1p2 /dev/nvme0n2p1
+  272  clear
+  273  lsblk
+  274  clear
+  275  pvs
+  276  clear
+  277  vgreduce dataVG /dev/nvme0n1p2
+  278  clear
+  279  vgreduce cs /dev/nvme0n1p2
+  280  vgs
+  281  clear
+  282  lsblk
+  283  clear
+  284  history > history_session37.txt 

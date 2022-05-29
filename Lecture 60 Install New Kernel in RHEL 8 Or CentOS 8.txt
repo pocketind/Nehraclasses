@@ -1,0 +1,50 @@
+How to Update Kernel in RHEL 8 Or CentOS 8:
+-------------------------------------------
+Step 1: Checking Installed Kernel Version
+When we install a distribution it includes a certain version of the Linux kernel. To show the current version installed on our system we can do:
+# uname -a
+# uname -r
+
+Step 2: Upgrading Kernel in CentOS 8
+To enable the ELRepo repository on CentOS 8, do:
+# yum install https://www.elrepo.org/elrepo-release-8.el8.elrepo.noarch.rpm -y
+
+Once the repository has been enabled, you can use the following command to list the available kernel.related packages:
+# yum --disablerepo="*" --enablerepo="elrepo-kernel" list available
+
+Next, install the latest mainline stable kernel:
+# yum --enablerepo=elrepo-kernel install kernel-ml -y
+
+Step 3: Set Default Kernel Version in GRUB
+See the default boot kernel details in /boot/grub2/grubenv file.
+# cat /boot/grub2/grubenv
+you can edit this file to set the default kernel.
+
+OR
+
+To make the newly-installed version the default boot option, you will have to modify the GRUB configuration as follows:
+Open and edit the file /etc/default/grub and set GRUB_DEFAULT=0. This means that the first kernel in the GRUB initial screen will be used as default.
+# vim /etc/default/grub
+GRUB_DEFAULT=0
+
+OR
+
+# grub2-set-default 0
+
+Verify this in grubenv file.
+# cat /boot/grub2/grubenv
+
+Change GRUB menu time out)
+# vim /etc/default/grub
+
+GRUB_TIMEOUT=5
+GRUB_DEFAULT=saved
+GRUB_DISABLE_SUBMENU=true
+GRUB_TERMINAL_OUTPUT="console"
+GRUB_CMDLINE_LINUX="crashkernel=auto rhgb quiet"
+GRUB_DISABLE_RECOVERY="true"
+
+Next, run the following command to recreate the kernel configuration.
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+
+Reboot and verify that the latest kernel is now being used by default.

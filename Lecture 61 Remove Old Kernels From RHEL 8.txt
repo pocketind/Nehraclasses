@@ -1,0 +1,30 @@
+How to clean /boot in RHEL 7/8? & How To Remove Old Kernels From Server:
+-----------------------------------------------------------------------------------------------------
+
+a) If /boot is showing low space available check its contents.
+b) Sometimes due to patching the older kerneles mighth be consuming space in it.
+
+1. List the old kernels in your system.
+# rpm -q kernel  (checks which kernels are instaled on your system)
+kernel-2.6.32-279.el6.x86_64
+kernel-2.6.32-279.2.1.el6.x86_64
+kernel-2.6.32-279.5.2.el6.x86_64
+kernel-2.6.32-279.9.1.el6.x86_64
+
+OR
+
+# rpm -qa | grep kernel
+
+2. Check the latest default kernel with which your system boots up.
+# uname -a
+
+3. Remove the all old kernels from the system except the current default and 1 old. You should atleast keep one previous kernel safe for safety purpose of your server.
+# yum remove kernel-2.6.32-279.el6.x86_64     (removes the oldest kernel safely)
+
+4. Recheck and list the remaining kernel is the server.
+# rpm -qa | grep kernel
+
+Thats All, You have successfully removed the old kernels from your server.
+================
+Thanks for watching the video. Please like our videos, share with your friends and feel free to ask anything, post your queries in comments section. We will be glad to answer your queries. Don't forget to subscribe the channel & turn on the bell notifications.
+===============

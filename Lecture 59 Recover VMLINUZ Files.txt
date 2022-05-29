@@ -1,0 +1,297 @@
+How to Recover GRUB 2 Bootloader in CentOS 8:
++++++++++++++++++++++++++++++++++++++++++++++
+
+GRUB (GRand Unified Bootloader) 2 is part of GNU Project and the default bootloader for famous Linux distros like RHEL, CentOS, Ubuntu, etc. GRUB is the first software program that runs when a computer is started. GRUB is responsible for loading the Kernel software. The Kernel then initializes the rest of the operating system.
+
+There are situations in which GRUB bootloader is corrupted. In such scenarios, the SysAdmin have to perform the recovery of the GRUB.
+
+In this article, we are discussing the following four scenarios and how to recover GRUB 2 bootloader in CentOS 8 server.
+
+The GRUB menu i.e. grub.cfg is corrupted or missing.
+The CentOS 8 Kernel i.e. vmlinuz-4.x is corrupted or missing.
+The CentOS 8 initrd i.e. initramfs-4.x is corrupted or missing.
+The /boot directory is corrupted or missing.
+ 
+
+How to Recover GRUB 2 Bootloader in CentOS 8
+
+Table of Contents:
+Environment Specification
+How to Recover grub.cfg (GRUB Menu) in CentOS 8
+How to Recover vmlinuz-4.x (Kernel) in CentOS 8
+How to Recover initrd image in CentOS 8
+How to Recover /boot directory in CentOS 8
+ 
+
+Environment Specification:
+We have provisioned virtual machine with minimally installed CentOS 8 operating system with following specification.
+
+CPU - 3.4 Ghz (2 cores)
+Memory - 1 GB
+Storage - 20 GB
+Operating System - CentOS 8.0
+Hostname - grub-recovery-01.recipes.com
+IP Address - 192.168.116.206 /24
+ 
+
+How to Recover grub.cfg (GRUB Menu) in CentOS 8:
+Connect with grub-recovery-01.recipes.com using ssh as root user.
+
+To produce this recovery scenario, we are deleting the grub.cfg.
+
+
+ 
+[root@grub-recovery-01 ~]# rm -f /boot/grub2/grub.cfg
+
+ 
+Your system will continue to perform smoothly, unless you restart it and it will then unable to find the grub.cfg file and it will failed to boot CentOS 8 operating system.
+
+Reboot the system now.
+
+[root@grub-recovery-01 ~]# systemctl reboot
+The machine will now boot into GRUB prompt because of the missing grub.cfg file.
+
+      Minimal BASH-like line editing is supported. For the first word,
+      TAB lists possible command completions. Anywhere else TAB lists
+      possible device or file completions.
+   
+   
+grub>
+
+ 
+Restart the system and boot using CentOS 8 ISO/DVD.
+
+01-recover-grub-2-bootloader-centos-8-install-menu
+
+At the CentOS 8 installation menu, select Troubleshooting and press <ENTER>.
+
+02-recover-grub-2-bootloader-centos-8-troubleshooting-menu
+
+Select Rescue a CentOS Linux system and press <ENTER>.
+
+03-recover-grub-2-bootloader-centos-8-rescue-prompt
+
+It will ask you for mounting your filesystem, choose the option and '1' and press <ENTER>.
+
+Press <ENTER> again to acquire a shell.
+
+Execute chroot command to access your filesystem.
+
+sh-4.4# chroot /mnt/sysimage
+By using grub2-mkconfig command, you can regenerate grub.cfg file.
+
+bash-4.4# grub2-mkconfig -o /boot/grub2/grub.cfg
+If you are working on an UEFI based machine then you have to generate grub.cfg file in /boot/efi/EFI/centos/ directory.
+
+If you are using SELinux, then create following file to trigger SELinux file relabeling process on next startup.
+
+bash-4.4# touch /.autorelabel
+Finally exit from chrooted environment and reboot your system.
+
+bash-4.4# exit
+sh-4.4# reboot
+Boot using your Hard Disk and now it will display the GRUB boot menu this time.
+
+04-recover-grub-2-bootloader-centos-8-boot-menu
+
+We have successfully recovered grub.cfg file on CentOS 8.
+
+ 
+
+How to Recover vmlinuz-4.x (Kernel) in CentOS 8:
+++++++++++++++++++++++++++++++++++++++++++++++++
+
+Connect with grub-recovery-01.recipes.com using ssh as root user.
+
+To produce this recovery scenario, we are removing the vmlinuz-4.18.0-80.el8.x86_64 file.
+
+[root@grub-recovery-01 ~]# rm -f /boot/vmlinuz-4.18.0-80.el8.x86_64
+Reboot the system.
+
+[root@grub-recovery-01 ~]# systemctl reboot
+On boot, GRUB will display the following warning and unable to load Kernel file.
+
+error: ../../grub-core/fs/fshelp.c:258:file '/vmlinuz-4.18.0-80.el8.x86_64' not 
+found.
+error: ../../grub-core/loader/i386/pc/linux.c:413:you need to load the kernel
+first.
+
+Press any key to continue...
+Restart your system and boot using CentOS 8 ISO/DVD.
+
+01-recover-grub-2-bootloader-centos-8-install-menu
+
+At the CentOS 8 installation menu, select Troubleshooting and press <ENTER>.
+
+02-recover-grub-2-bootloader-centos-8-troubleshooting-menu
+
+Select Rescue a CentOS Linux system and press <ENTER>.
+
+03-recover-grub-2-bootloader-centos-8-rescue-prompt
+
+It will ask you for mounting your filesystem, choose the option and '1' and press <ENTER>.
+
+Press <ENTER> again to acquire a shell.
+
+Go to Packages directory in ISO/DVD.
+
+sh-4.4# cd /mnt/install/repo/BaseOS/Packages
+Reinstall CentOS 8 Kernel using following command.
+
+sh-4.4# rpm -ivh --root=/mnt/sysimage --replacepkgs kernel-core-4.18.0-80.el8.x86_64.rpm
+Verifying...                          ################################# [100%]
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:kernel-core-4.18.0-80.el8        ################################# [100%]
+Verify that vmlinuz-4.x file is created by the installer.
+
+sh-4.4# ls /mnt/sysimage/boot/vmlinuz*
+/mnt/sysimage/boot/vmlinuz-0-rescue-9239012f800e401d86d70eef6bc4f8b6
+/mnt/sysimage/boot/vmlinuz-4.18.0-80.el8.x86_64
+If you are using SELinux then create following file to trigger SELinux file relabeling process on next startup.
+
+sh-4.4# touch /mnt/sysimage/.autorelabel
+Reboot the system now.
+
+sh-4.4# reboot
+The GRUB will be able to load the Kernel now and you will reach at the login prompt after successful startup.
+
+CentOS Linux 8 (Core)
+Kernel 4.18.0-80.el8.x86_64 on an x86_64
+
+grub-recovery-01 login:
+We have successfully recovered CentOS 8 Kernel.
+
+ 
+
+How to Recover initrd image in CentOS 8:
+Connect with grub-recovery-01.recipes.com using ssh as root user.
+
+To initiate this recovery scenario, we are removing the initramfs-4.18.0-80.el8.x86_64.img file.
+
+[root@grub-recovery-01 ~]# rm -f /boot/initramfs-4.18.0-80.el8.x86_64.img
+Reboot your system.
+
+[root@grub-recovery-01 ~]# systemctl reboot
+After reboot the GRUB will display following warning and unable to find initramfs-4.x file.
+
+error: ../../grub-core/fs/fshelp.c:258:file
+'/initramfs-4.18.0-80.el8.x86_64.img' not
+found.
+
+Press any key to continue...
+Restart the system and boot using CentOS 8 ISO/DVD.
+
+01-recover-grub-2-bootloader-centos-8-install-menu
+
+At the CentOS 8 installation menu, select Troubleshooting and press <ENTER>.
+
+02-recover-grub-2-bootloader-centos-8-troubleshooting-menu
+
+Select Rescue a CentOS Linux system and press <ENTER>.
+
+03-recover-grub-2-bootloader-centos-8-rescue-prompt
+
+It will ask you for mounting your filesystem, choose the option and '1' and press <ENTER>.
+
+Press <ENTER> again to acquire a shell.
+
+Execute chroot command to access our filesystem.
+
+sh-4.4# chroot /mnt/sysimage
+Use dracut command to recreate initramfs-4.x file.
+
+bash-4.4# dracut
+Verify that initramfs-4.x file is created by dracut command.
+
+bash-4.4# ls /boot/initramfs-*
+/boot/initramfs-0-rescue-9239012f800e401d86d70eef6bc4f8b6.img
+/boot/initramfs-4.18.0-80.el8.x86_64.img
+Exit chroot and reboot the system now.
+
+bash-4.4# exit
+sh-4.4# reboot
+The GRUB will be able to load the initrd image now and you will reach at the login prompt after successful startup.
+
+CentOS Linux 8 (Core)
+Kernel 4.18.0-80.el8.x86_64 on an x86_64
+
+grub-recovery-01 login:
+CentOS 8 initrd image has been recovered.
+
+ 
+
+How to Recover /boot directory in CentOS 8:
+Connect with grub-recovery-01.recipes.com using ssh as root user.
+
+To initiate this recovery scenario, we are removing /boot directory.
+
+[root@grub-recovery-01 ~]# rm -rf /boot/*
+Reboot your system.
+
+[root@grub-recovery-01 ~]# systemctl reboot
+After reboot the GRUB will show the "grub rescue" prompt.
+
+.
+error: ../../grub-core/fs/fshelp.c:258:file '/grub2/i386-pc/normal.mod' not foun
+d.
+Entering rescue mode...
+grub rescue>
+Restart the system and boot using CentOS 8 ISO/DVD.
+
+01-recover-grub-2-bootloader-centos-8-install-menu
+
+At the CentOS 8 installation menu, select Troubleshooting and press <ENTER>.
+
+02-recover-grub-2-bootloader-centos-8-troubleshooting-menu
+
+Select Rescue a CentOS Linux system and press <ENTER>.
+
+03-recover-grub-2-bootloader-centos-8-rescue-prompt
+
+It will ask you for mounting your filesystem, choose the option and '1' and press <ENTER>.
+
+Press <ENTER> again to acquire a shell.
+
+The CentOS 8 DVD/ISO is mounted in mnt directory.
+
+Go to BaseOS packages directory.
+
+sh-4.4# cd /mnt/install/repo/BaseOS/Packages
+Reinstall kernel-core package using following command.
+
+sh-4.4# rpm -ivh --root=/mnt/sysimage --replacepkgs kernel-core-4.18.0-80.el8.x86_64.rpm
+Verifying...                          ################################# [100%]
+Preparing...                          ################################# [100%]
+Updating / installing...
+   1:kernel-core-4.18.0-80.el8        ################################# [100%]
+grub2-editenv: error: cannot open '/boot/grub2/grubenv.new': No such file or directory.
+Ignore above error, we will create this file manually.
+
+Run chroot to mount /mnt/sysimage as root directory.
+
+sh-4.4# chroot /mnt/sysimage
+Reinstall GRUB 2 using following command.
+
+bash-4.4# grub2-install /dev/sda
+Installing for i386-pc platform.
+Installation finished. No error reported.
+Recreate grub.cfg (GRUB menu) using grub2-mkconfig command.
+
+bash-4.4# grub2-mkconfig -o /boot/grub2/grub.cfg
+Generating grub configuration file ...
+done
+If you are using SELinux, then create following file to trigger SELinux file relabeling process on next startup.
+
+bash-4.4# touch /.autorelabel
+Finally exit from chrooted environment and reboot your system.
+
+bash-4.4# exit
+sh-4.4# reboot
+Boot using your Hard Disk and now it will display the GRUB boot menu this time.
+
+04-recover-grub-2-bootloader-centos-8-boot-menu
+
+We have successfully recovered /boot directory on CentOS 8.
+
+We have discussed all four scenarios and demonstrate how to recover GRUB 2 bootloader in CentOS 8.

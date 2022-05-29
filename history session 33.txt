@@ -1,0 +1,207 @@
+    1  cat /etc/fstab 
+    2  clear
+    3  lsblk
+    4  clear
+    5  lsblk
+    6  clear
+    7  fdisk -l /dev/sda
+    8  clear
+    9  fdisk /dev/sda
+   10  partprobe /dev/sda
+   11  clear
+   12  lsblk
+   13  clear
+   14  fdisk -l /dev/nvme0n2
+   15  clear
+   16  fdisk /dev/nvme0n2
+   17  partprobe
+   18  clear
+   19  lsblk
+   20  clear
+   21  pvcreate /dev/sda1
+   22  lsblk
+   23  clear
+   24  pvcreate /dev/nvme0n2p1
+   25  clear
+   26  pvs
+   27  vgcreate NehraClasses_VG /dev/nvme0n2p1 /dev/sda1
+   28  clear
+   29  vgs
+   30  clear
+   31  lvcreate -L 4G -n NehraClasses_LV NehraClasses_VG 
+   32  lvs
+   33  clear
+   34  lsblk -f
+   35  clear
+   36  mkfs.ext4 /dev/NehraClasses_VG/NehraClasses_LV 
+   37  clear
+   38  blkid /dev/NehraClasses_VG/NehraClasses_LV
+   39  clear
+   40  mkdir /testdir
+   41  clear
+   42  mount /dev/NehraClasses_VG/NehraClasses_LV /testdir/
+   43  cd /testdir/
+   44  clear
+   45  touch file{1..50}.txt
+   46  ll
+   47  clear
+   48  cal > cal.txt
+   49  echo "Nehra Classes Are Awesomecal > cal.txt" > nehraclasses.txt
+   50  ll
+   51  clear
+   52  cd
+   53  clear
+   54  df -hT
+   55  clear
+   56  vgs
+   57  lsblk
+   58  clear
+   59  lvextend -L +1000M /dev/NehraClasses_VG/NehraClasses_LV 
+   60  lvs
+   61  clear
+   62  df -hT
+   63  clear
+   64  resize2fs /dev/NehraClasses_VG/NehraClasses_LV 
+   65  clear
+   66  df -hT
+   67  clear
+   68  vgs
+   69  clear
+   70  lsblk
+   71  clear
+   72  fdisk /dev/sda
+   73  partprobe 
+   74  clear
+   75  lsblk
+   76  clear
+   77  pvcreate /dev/sda2
+   78  clear
+   79  vgs
+   80  vgextend NehraClasses_VG /dev/sda2
+   81  vgs
+   82  clear
+   83  lvs
+   84  clear
+   85  lvextend -L 7G /dev/NehraClasses_VG/NehraClasses_LV -r
+   86  clear
+   87  lvs
+   88  clear
+   89  df -hT
+   90  clear
+   91  cd /testdir/
+   92  ll
+   93  clear
+   94  cat nehraclasses.txt 
+   95  clear
+   96  cd
+   97  clear
+   98  umount /testdir 
+   99  clear
+  100  fsck -f /dev/NehraClasses_VG/NehraClasses_LV 
+  101  clear
+  102  resize2fs /dev/NehraClasses_VG/NehraClasses_LV 5G
+  103  clear
+  104  lvreduce -L 5G /dev/NehraClasses_VG/NehraClasses_LV 
+  105  clear
+  106  resize2fs /dev/NehraClasses_VG/NehraClasses_LV 5G
+  107  fsck -f /dev/NehraClasses_VG/NehraClasses_LV 
+  108  clear
+  109  mount /dev/NehraClasses_VG/NehraClasses_LV /testdir/
+  110  clear
+  111  cd /testdir/
+  112  ll
+  113  clear
+  114  cat cal.txt 
+  115  clear
+  116  cd
+  117  clear
+  118  lsblk
+  119  clear
+  120  fdisk -l /dev/sdb
+  121  clear
+  122  fdisk /dev/sdb
+  123  partprobe 
+  124  clear
+  125  lsblk
+  126  clear
+  127  pvcreate /dev/sdb1
+  128  pvs
+  129  clear
+  130  vgcreate XFS_VG /dev/sdb1
+  131  vgs
+  132  clear
+  133  lvcreate -L 2G -n XFS_LV XFS_VG 
+  134  clear
+  135  lvs
+  136  clear
+  137  mkfs.xfs /dev/XFS_VG/XFS_LV 
+  138  clear
+  139  mkdir /xfsdir
+  140  clear
+  141  mount /dev/XFS_VG/XFS_LV /xfsdir/
+  142  df -h
+  143  clear
+  144  cd /xfsdir/
+  145  touch {1..20}
+  146  ll
+  147  clear
+  148  cal > cal.txt
+  149  cat cal.txt 
+  150  clear
+  151  cd
+  152  lvs
+  153  clear
+  154  vgs
+  155  clear
+  156  lvextend -L +1024M /dev/XFS_VG/XFS_LV 
+  157  lvs
+  158  clear
+  159  df -hT
+  160  clear
+  161  xfs_growfs /xfsdir/
+  162  clear
+  163  df -hT
+  164  clear
+  165  lvextend -L +600M /dev/XFS_VG/XFS_LV -r
+  166  clear
+  167  lvs
+  168  clear
+  169  df -h
+  170  clear
+  171  xfs_growfs /dev/XFS_VG/XFS_LV 
+  172  clear
+  173  xfs_growfs /dev/sdb1
+  174  clear
+  175  xfs_growfs /dev/XFS_VG/XFS_LV 
+  176  clear
+  177  partprobe 
+  178  partprobe  /dev/sda
+  179  clear
+  180  umount /xfsdir 
+  181  clear
+  182  df -hT
+  183  clear
+  184  lvreduce -L 1G /dev/XFS_VG/XFS_LV 
+  185  lvs
+  186  clear
+  187  mount /dev/XFS_VG/XFS_LV /xfsdir/
+  188  clear
+  189  for x in `ls /sys/class/scsi_host/` ; do echo "-----$x Scanned-----"; echo "- - -" > /sys/class/scsi_host/$x/scan ; done
+  190  clear
+  191  lsblk
+  192  clear
+  193  df -hT
+  194  clear
+  195  fdisk /dev/sdc
+  196  partprobe 
+  197  clear
+  198  pvcreate /dev/sdc1
+  199  vgextend NehraClasses_VG /dev/sdc1
+  200  lvs
+  201  clear
+  202  lvextend -L +10000M /dev/NehraClasses_VG/NehraClasses_LV -r
+  203  clear
+  204  df -hT
+  205  clear
+  206  history 
+  207  history > history_session33.txt

@@ -1,0 +1,99 @@
+    1  ip a
+    2  clear
+    3  cat /etc/fstab 
+    4  clear
+    5  lsblk
+    6  clear
+    7  lsblk
+    8  clear
+    9  for x in `ls /sys/class/scsi_host/` ; do echo "-----$x Scanned-----"; echo "- - -" > /sys/class/scsi_host/$x/scan ; done
+   10  lsblk
+   11  clear
+   12  for x in `ls /sys/class/scsi_host/` ; do echo "-----$x Scanned-----"; echo "- - -" > /sys/class/scsi_host/$x/scan ; done
+   13  clear
+   14  lsblk
+   15  clear
+   16  fdisk -l /dev/sda
+   17  clear
+   18  fdisk /dev/sda
+   19  partprobe /dev/sda
+   20  clear
+   21  lsblk
+   22  clear
+   23  lsblk -f
+   24  clear
+   25  mke2fs /dev/sda1
+   26  clear
+   27  blkid /dev/sda1
+   28  lsblk -f
+   29  clear
+   30  tune2fs -l /dev/sda1 | grep feature
+   31  clear
+   32  mkdir /testdir
+   33  mount /dev/sda1 /testdir/
+   34  clear
+   35  df -hT
+   36  cd /testdir/
+   37  clear
+   38  pwd
+   39  touch test{1..20}
+   40  cal >cal.txt
+   41  cat cal.txt 
+   42  clear
+   43  ll
+   44  clear
+   45  cd
+   46  umount /testdir 
+   47  df -hT
+   48  clear
+   49  tune2fs -j /dev/sda1
+   50  blkid /dev/sda1
+   51  clear
+   52  tune2fs -l /dev/sda1 | grep feature
+   53  clear
+   54  mount /dev/sda1 /testdir/
+   55  cd /testdir/
+   56  clear
+   57  ll
+   58  clear
+   59  cat cal.txt 
+   60  clear
+   61  cd
+   62  umount /testdir 
+   63  df
+   64  clear
+   65  tune2fs -o extents,uninit_bg,dir_index /dev/sda1
+   66  tune2fs -O extents,uninit_bg,dir_index /dev/sda1
+   67  clear
+   68  blkid /dev/sda1
+   69  lsblk -f
+   70  clear
+   71  mount /dev/sda1 /testdir/
+   72  cd /testdir/
+   73  ll
+   74  clear
+   75  cat cal.txt 
+   76  clear
+   77  cd
+   78  df
+   79  clear
+   80  tune2fs -l /dev/sda1 | grep feature
+   81  clear
+   82  df
+   83  clear
+   84  umount /testdir 
+   85  tune2fs -O ^has_journal /dev/sda1
+   86  tune2fs -l /dev/sda1 | grep feature
+   87  clear
+   88  tune2fs -O has_journal /dev/sda1
+   89  clear
+   90  tune2fs -l /dev/sda1 | grep feature
+   91  clear
+   92  vim /etc/fstab 
+   93  clear
+   94  df
+   95  clear
+   96  mount -a
+   97  df -h
+   98  clear
+   99  history > history_session30

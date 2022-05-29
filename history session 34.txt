@@ -1,0 +1,390 @@
+    1  init 0
+    2  ip a
+    3  clear
+    4  df -h
+    5  cat /etc/fstab 
+    6  clear
+    7  cat /etc/redhat-release 
+    8  clear
+    9  lsblk
+   10  clear
+   11  fdisk -l /dev/sda
+   12  clear
+   13  fdisk /dev/sda
+   14  partprobe /dev/sda
+   15  clear
+   16  lsblk
+   17  clear
+   18  vgcreate VolGrp /dev/sda1
+   19  clear
+   20  pvs
+   21  vgs
+   22  clear
+   23  lvcreate -L 3G -n LogVol VolGrp 
+   24  lvs
+   25  clear
+   26  mkfs.ext4 /dev/VolGrp/LogVol 
+   27  clear
+   28  lsblk -f
+   29  clear
+   30  mkdir /data
+   31  clear
+   32  mount /dev/VolGrp/LogVol /data/
+   33  df -h
+   34  clear
+   35  cd /data/
+   36  touch {1..5}
+   37  ll
+   38  clear
+   39  mkdir aa bb cc
+   40  cal > cal.txt
+   41  echo Nehra Classses Are Awesome > nehra.txt
+   42  ll
+   43  clear
+   44  cp -r /usr/sbin .
+   45  ll
+   46  clear
+   47  du -sh /data/
+   48  ll
+   49  clear
+   50  lsblk
+   51  clear
+   52  lvcreate -L 1G -s -n snap_data /dev/VolGrp/LogVol
+   53  clear
+   54  lvs
+   55  clear
+   56  lsblk
+   57  clear
+   58  lvdisplay 
+   59  clear
+   60  rm -rf *
+   61  ll
+   62  du -sh /data/
+   63  clear
+   64  cd
+   65  umount /data 
+   66  lvconvert --merge /dev/VolGrp/snap_data 
+   67  clear
+   68  lvchange -an  /dev/VolGrp/LogVol 
+   69  lvs
+   70  clear
+   71  lvchange -ay  /dev/VolGrp/LogVol 
+   72  mount /dev/VolGrp/LogVol /data/
+   73  cd /data/
+   74  ll
+   75  clear
+   76  du -sh /data/
+   77  clear
+   78  cat cal.txt 
+   79  cat nehra.txt 
+   80  clear
+   81  lvs
+   82  clear
+   83  lsblk 
+   84  clear
+   85  history 
+   86  clear
+   87  lvcreate -L 200M -s -n snap_data /dev/VolGrp/LogVol
+   88  lvs
+   89  clear
+   90  dd if=/dev/zero of=/data/dummy_file2 bs=512M count=1 oflag=dsync
+   91  du -sh /data/
+   92  clear
+   93  lvs
+   94  ll
+   95  clear
+   96  rm -rf *
+   97  ll
+   98  cd
+   99  clear
+  100  umount /data 
+  101  history 
+  102  clear
+  103  lvconvert --merge /dev/VolGrp/snap_data
+  104  clear
+  105  lvs
+  106  clear
+  107  lvconvert --merge /dev/VolGrp/snap_data 
+  108  lvs
+  109  clear
+  110  cat /etc/lvm/lvm.conf
+  111  clear
+  112  vim /etc/lvm/lvm.conf
+  113  clear
+  114  vgs
+  115  clear
+  116  lvextend -L +1G /dev/VolGrp/snap_data 
+  117  lvs
+  118  clear
+  119  lvs
+  120  clear
+  121  lvremove /dev/VolGrp/snap_data 
+  122  clear
+  123  lsblk 
+  124  clear
+  125  lvs
+  126  vgs
+  127  clear
+  128  vim /etc/lvm/lvm.conf
+  129  clear
+  130  mount /dev/VolGrp/LogVol /data/
+  131  clear
+  132  cd /data/
+  133  touch {1..5}
+  134  mkdir aa bb cc
+  135  cal >cal.txt
+  136  clear
+  137  cp -r /usr/sbin/ .
+  138  ll
+  139  clear
+  140  lvs
+  141  clear
+  142  history 
+  143  clear
+  144  lvcreate -L 200M -s -n snap_data /dev/VolGrp/LogVol
+  145  lvs
+  146  clear
+  147  history 
+  148  clear
+  149  dd if=/dev/zero of=/data/dummy_file2 bs=512M count=1 oflag=dsync
+  150  ll
+  151  clear
+  152  du -sh /data/
+  153  clear
+  154  lvs
+  155  ll
+  156  clear
+  157  rm -rf *
+  158  cd
+  159  umount /data 
+  160  clear
+  161  history 
+  162  clear
+  163  lvconvert --merge /dev/VolGrp/snap_data
+  164  clear
+  165  history 
+  166  clear
+  167  vim /etc/lvm/lvm.conf
+  168  clear
+  169  lvs
+  170  clear
+  171  lvs
+  172  clear
+  173  lvremove /dev/VolGrp/snap_data 
+  174  clear
+  175  mount /dev/VolGrp/LogVol /data/
+  176  cd /data/
+  177  touch {1..5}
+  178  mkdir aa bb cc
+  179  cal >cal
+  180  cp -r /usr/sbin/ .
+  181  clear
+  182  history 
+  183  clear
+  184  lvcreate -L 200M -s -n snap_data /dev/VolGrp/LogVol
+  185  lvs
+  186  clear
+  187  history 
+  188  clear
+  189  dd if=/dev/zero of=/data/dummy_file2 bs=512M count=1 oflag=dsync
+  190  lvs
+  191  clear
+  192  lvextend -L +1G /dev/VolGrp/snap_data 
+  193  lvs
+  194  clear
+  195  lvremove /dev/VolGrp/snap_data 
+  196  clear
+  197  ll
+  198  clear
+  199  lvcreate -L 400M -s -n snap_data /dev/VolGrp/LogVol
+  200  lvs
+  201  ll
+  202  clear
+  203  du -sh /data/
+  204  lvs
+  205  cd
+  206  clear
+  207  umount /data 
+  208  mount /dev/VolGrp/LogVol /data/
+  209  cd /data/
+  210  ll
+  211  rm -rf *
+  212  ll
+  213  clear
+  214  cd
+  215  umount /data 
+  216  df
+  217  clear
+  218  lvconvert --merge /dev/VolGrp/snap_data 
+  219  clear
+  220  lvchange -an /dev/VolGrp/LogVol 
+  221  lvchange -ay /dev/VolGrp/LogVol 
+  222  clear
+  223  mount /dev/VolGrp/LogVol /data/
+  224  clear
+  225  cd /data/
+  226  ll
+  227  cat cal 
+  228  clear
+  229  cd
+  230  init 0
+  231  cal > %d%my%y.txt
+  232  ll
+  233  echo %d
+  234  cal > file`date +%d%b%Y`.txt
+  235  ll
+  236  cal > `date +%d%b%Y`file.txt
+  237  ll
+  238  vim script.sh
+  239  chmod +x script.sh 
+  240  ./script.sh 
+  241  ls /tmp
+  242  clear
+  243  vim script.sh 
+  244  ./script.sh 
+  245  vim script.sh 
+  246  ./script.sh 
+  247  vim script.sh 
+  248  ./script.sh 
+  249  ls /tmp
+  250  cat /tmp/08Dec2021file.txt 
+  251  vim script.sh 
+  252  ./script.sh 
+  253  clear
+  254  lvremove /dev/VolGrp/LogVol 
+  255  vgremove VolGrp 
+  256  pvremove /dev/sda1 
+  257  lsblk
+  258  fdisk /dev/sda
+  259  partprobe 
+  260  init 0
+  261  lsblk
+  262  clear
+  263  lvs
+  264  clear
+  265  lsblk
+  266  clear
+  267  fdisk -l /dev/sda
+  268  clear
+  269  fdisk /dev/sda
+  270  partprobe 
+  271  clear
+  272  lsblk
+  273  clear
+  274  vgcreate system /dev/sda1
+  275  pvs
+  276  vgs
+  277  clear
+  278  lvcreate -L 3G -n data system 
+  279  clear
+  280  lvs
+  281  clear
+  282  mkfs.ext4 /dev/system/data 
+  283  clear
+  284  lsblk -f
+  285  clear
+  286  mkdir /data
+  287  clear
+  288  cd /data/
+  289  ll
+  290  clear
+  291  cd
+  292  clear
+  293  mount /dev/system/data /data/
+  294  df -hT
+  295  clear
+  296  cd /data/
+  297  touch file{1..5}.txt
+  298  ll
+  299  clear
+  300  cal > cal.txt
+  301  mkdir aa bb cc dd
+  302  echo Nehra Classes Are Awesome > nehra.txt
+  303  ll
+  304  clear
+  305  cp -r /usr/sbin/ .
+  306  ll
+  307  clear
+  308  cd
+  309  du -sh /data/
+  310  clear
+  311  lvcreate -L 1G -s -n snap_data /dev/system/data
+  312  lvs
+  313  clear
+  314  cd /data/
+  315  ll
+  316  clear
+  317  rm -rf *
+  318  ll
+  319  clear
+  320  cd
+  321  umount /data 
+  322  df -hT
+  323  clear
+  324  lvconvert --merge /dev/system/snap_data 
+  325  lvs
+  326  clear
+  327  lvchange -an /dev/system/data 
+  328  lvs
+  329  clear
+  330  lvchange -ay /dev/system/data 
+  331  lvs
+  332  clear
+  333  mount /dev/system/data /data/
+  334  df -hT
+  335  clear
+  336  cd /data/
+  337  ll
+  338  clear
+  339  du -sh /data
+  340  clear
+  341  cat cal.txt 
+  342  cat nehra.txt 
+  343  clear
+  344  cd
+  345  lvcreate -L 100M -s -n snap_data /dev/system/data
+  346  clear
+  347  lsblk
+  348  clear
+  349  lvdisplay 
+  350  clear
+  351  lvs
+  352  cd /data/
+  353  clear
+  354  dd if=/dev/zero of=/data/dummy_file2 bs=1G count=1 oflag=dsync
+  355  clear
+  356  ll
+  357  clear
+  358  ls -lh dummy_file2 
+  359  lsblk
+  360  clear
+  361  df
+  362  clear
+  363  lvs
+  364  clear
+  365  grep Snapshot /var/log/messages
+  366  clear
+  367  ll
+  368  clear
+  369  rm -rf *
+  370  ll
+  371  cd
+  372  umount /data 
+  373  clear
+  374  df -hT
+  375  clear
+  376  lvconvert --merge /dev/system/snap_data 
+  377  clear
+  378  lvextend -L +1G /dev/system/snap_data 
+  379  lvs
+  380  clear
+  381  lsblk 
+  382  clear
+  383  lvremove /dev/system/snap_data 
+  384  clear
+  385  lvs
+  386  lsblk
+  387  clear
+  388  vim /etc/lvm/lvm.conf
+  389  clear
+  390  history > history_session34.txt

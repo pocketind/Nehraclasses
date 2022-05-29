@@ -1,0 +1,399 @@
+Understanding LVM snapshots (create, merge, remove, extend)
+Below steps are tested on Red Hat Enterprise Linux 8.
+
+Being a system administrator we have to perform activities which leads to filesystem and data changes
+so it is always a good idea to keep a backup but taking a backup everytime might not be possible although
+backup is one of the option for a timely run like every night backup to protect our data but what if you
+know you are planning to perform some application upgrade which has thousands of files and you need an
+immediate fix so instead of copying all the files which needs huge amount of storage and alot of copy
+time we prefer to take a snapshot.
+
+NOTE:
+LVM snapshot should NOT be mistaken with backup.
+ 
+How snapshot sizing works? How different is it from backup?
+LVM snapshot are very much space efficient, by space efficient I mean when a snapshot is created for
+a logical volume with 10GB space the snapshot will take very less space (next to nothing) but as the
+content of the source volume increases the snapshot volume size will also increase accordingly. Hence
+a snapshot must be created but should not be kept for a long time as iy will end up eating alot of space.
+In such cases backup is the preferred option instead of snapshot.
+
+How space efficient is the LVM snapshot?
+Lots of change = not very space efficient
+Small amount of change = very space efficient
+
+IMPORTANT NOTE:
+In LVM we have a feature where a snapshot size can be extended but that does not means that any data
+modified after creating a snapshot will also be restored since the snapshot was extended at a later point of time.
+Snapshot will revert back to the state of point where it was taken and any data modified after taking
+the snapshot will be overwritten.
+
+Let us start with some examples
+
+I have a setup with below logical volumes
+
+# lvs
+  LV        VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data      system -wi-a-----  2.00g
+  opt       system -wi-ao----  2.00g
+  root      system -wi-ao----  2.00g
+  swap      system -wi-ao----  4.00g
+  tmp       system -wi-ao---- 12.00g
+  var       system -wi-ao----  2.00g
+For the sake of this article we will create a snapshot of our ‘data’ partition. But before that lets
+check the existing content of our data partition
+
+Our logical volume is mounted on /data directory
+
+# df -Th /data/
+Filesystem              Type  Size  Used Avail Use% Mounted on
+/dev/mapper/system-data ext4  2.0G  6.1M  1.8G   1% /data
+with below content
+
+# ls -l /data/
+total 28
+drwxr-xr-x 2 root root  4096 Sep 13 03:24 dir1
+drwxr-xr-x 2 root root  4096 Sep 13 03:24 dir2
+drwxr-xr-x 2 root root  4096 Sep 13 03:24 dir3
+-rw-r--r-- 1 root root     0 Sep 13  2017 file1
+-rw-r--r-- 1 root root     0 Sep 13  2017 file2
+-rw-r--r-- 1 root root     0 Sep 13  2017 file3
+drwx------ 2 root root 16384 Sep 13 03:17 lost+found
+
+So the same is expected after performing a lvm snapshot merge.
+
+Create Snapshot
+Use below command to create a snapshot
+
+# lvcreate -L 1G -s -n snap_data /dev/system/data
+Using default stripesize 64.00 KiB.
+Logical volume "snap_data" created.
+Here,
+
+-L means assign LogicalVolume Size
+-s or (--snapshot) means create a snapshot volume
+-n or (--name) means the name of the snapshot logical volume
+Lastly (/dev/system/data) is the path of the logical volume whose snapshot has to be created
+
+Here we are creating a snapshot volume with 1G size (snap_data) for /dev/system/data logical volume
+These snapshots are read write so you can mount this snapshot volume and check the data/content.
+
+# mount /dev/system/snap_data /mnt/
+Check the content of the snapshot
+
+# ls -l /mnt/
+total 28
+drwxr-xr-x 2 root root  4096 Sep 13 03:24 dir1
+drwxr-xr-x 2 root root  4096 Sep 13 03:24 dir2
+drwxr-xr-x 2 root root  4096 Sep 13 03:24 dir3
+-rw-r--r-- 1 root root     0 Sep 13  2017 file1
+-rw-r--r-- 1 root root     0 Sep 13  2017 file2
+-rw-r--r-- 1 root root     0 Sep 13  2017 file3
+drwx------ 2 root root 16384 Sep 13 03:17 lost+found
+We can get the details of the snapshot and the parent logical volume
+
+# lvs /dev/system/snap_data
+  LV        VG     Attr       LSize Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  snap_data system swi-aos--- 1.00g      data   0.00
+As you see the new logical snapshot volume is visible in the above information
+
+IMPORTANT NOTE:
+Make sure the snapshot volume size is always equal to the origin volume if you feel that the origin
+volume is going to be left out for a long period and high amount of data will be written on the source
+partition as there are chances of snapshot getting corrupted if the origin volume size becomes larger
+than the snapshot volume size.
+ 
+What is LVM size grows more than snapshot size
+Here my snapshot volume size is 1G while the actual volume size is 2G where only few MB is used
+
+# df -h /data/
+Filesystem               Size  Used Avail Use% Mounted on
+/dev/mapper/system-data  2.0G  6.1M  1.8G   1% /data
+Let me put some dummy content with 1G size in the /data partition
+
+# dd if=/dev/zero of=/data/dummy_file2 bs=1G count=1 oflag=dsync
+1+0 records in
+1+0 records out
+1073741824 bytes (1.1 GB) copied, 98.5545 s, 10.9 MB/s
+Check the status of snapshot
+
+# lvs
+  LV        VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data      system owi-aos---  2.00g
+  mgtserv   system -wi-ao----  2.00g
+  opt       system -wi-ao----  2.00g
+  root      system -wi-ao----  2.00g
+  snap_data system swi-I-s---  1.00g      data   100.00
+  swap      system -wi-ao----  4.00g
+  tmp       system -wi-ao---- 12.00g
+  var       system -wi-ao----  2.00g
+As you see it shows 100% of the snapshot size is occupied which means now this snapshot is corrupted and cannot be used
+
+Check this further using below commands
+
+# lvdisplay /dev/system/snap_data
+  --- Logical volume ---
+  LV Path                /dev/system/snap_data
+  LV Name                snap_data
+  VG Name                system
+  LV UUID                NwJSQu-NjIr-7Qn0-Wo0q-ig7d-3apy-eChdWD
+  LV Write Access        read/write
+  LV Creation host, time nds18-rdssrv, 2017-09-13 04:23:35 -0400
+  LV snapshot status     INACTIVE destination for data
+  LV Status              available
+  # open                 0
+  LV Size                2.00 GiB
+  Current LE             64
+  COW-table size         1.00 GiB
+  COW-table LE           32
+  Snapshot chunk size    4.00 KiB
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:12
+Check dmsetup status
+
+If a snapshot is made of source data, I understand that
+the copy-on-write (COW) means that if a modification is made to existing
+source volume data, then the "old" data from the source volume is copied
+to the snapshot volume before the source data is modified.
+
+# dmsetup status
+system-var: 0 4194304 linear
+system-snap_data: 0 4194304 snapshot Invalid
+Grep for snapshot string in syslog
+
+# grep Snapshot /var/log/messages
+Sep 13 03:32:19 nds18-rdssrv lvm[12168]: WARNING: Snapshot system-snap_data is now 80.02% full.
+Sep 13 03:54:07 nds18-rdssrv lvm[1595]: WARNING: Snapshot system-snap_data is now 83.52% full.
+Sep 13 04:29:52 nds18-rdssrv lvm[1606]: WARNING: Snapshot system-snap_data changed state to: Invalid and should be removed.
+As you see once the snapshot size becomes full it becomes unusable so must be removed
+
+# lvremove -f /dev/system/snap_data
+  Logical volume "snap_data" successfully removed
+ 
+
+How can we avoid LVM snapshot getting corrupted
+We have an option to automatically extend the logical volume if the origin volume parition
+size reaches the threshold or manually extend the snapshot size before it becomes 100% occupied.
+
+NOTE:
+Automatic method is preferred as once the snapshot volume reaches 100% space, the snapshot
+will get corrupted as seen above.
+ 
+
+Manually extend the snapshot volume
+For manually extending the snapshot volume
+
+Before extending the snapshot volume
+
+# lvdisplay /dev/system/snap_data
+  --- Logical volume ---
+  LV Path                /dev/system/snap_data
+  LV Name                snap_data
+  VG Name                system
+  LV UUID                ETHmgE-sgz0-4o7Q-3GDQ-pUy4-CJPo-D3nlIe
+  LV Write Access        read/write
+  LV Creation host, time nds18-rdssrv, 2017-09-13 05:21:37 -0400
+  LV snapshot status     active destination for data
+  LV Status              available
+  # open                 0
+  LV Size                2.00 GiB
+  Current LE             64
+  COW-table size         1.00 GiB
+  COW-table LE           32
+  Allocated to snapshot  0.00%
+  Snapshot chunk size    4.00 KiB
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:12
+Next we will extend our snapshot logical volume
+
+# lvextend -L +1G /dev/system/snap_data
+  Size of logical volume system/snap_data changed from 1.00 GiB (32 extents) to 2.00 GiB (64 extents).
+  Logical volume system/snap_data successfully resized.
+After extending the snapshot volume
+
+# lvdisplay /dev/system/snap_data
+  --- Logical volume ---
+  LV Path                /dev/system/snap_data
+  LV Name                snap_data
+  VG Name                system
+  LV UUID                ETHmgE-sgz0-4o7Q-3GDQ-pUy4-CJPo-D3nlIe
+  LV Write Access        read/write
+  LV Creation host, time nds18-rdssrv, 2017-09-13 05:21:37 -0400
+  LV snapshot status     active destination for data
+  LV Status              available
+  # open                 0
+  LV Size                2.00 GiB
+  Current LE             64
+  COW-table size         2.00 GiB
+  COW-table LE           64
+  Allocated to snapshot  0.00%
+  Snapshot chunk size    4.00 KiB
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:12
+As you see the LVM COW table size (Copy On Write) size has increased from 1 Gb to 2 GB
+
+ 
+
+Automatically extend the snapshot volume
+For automatically extending the snapshot volume
+
+Open the below file and change snapshot_autoextend_threshold value from 100 to some other
+value lower than 100 and snapshot_autoextend_percent to the value you would like to extend
+the snapshot volume, more detail on this attrubute is provided in the logfile
+
+# vim /etc/lvm/lvm.conf
+        # Configuration option activation/snapshot_autoextend_threshold.
+        # Auto-extend a snapshot when its usage exceeds this percent.
+        # Setting this to 100 disables automatic extension.
+        # The minimum value is 50 (a smaller value is treated as 50.)
+        # Also see snapshot_autoextend_percent.
+        # Automatic extension requires dmeventd to be monitoring the LV.
+        #
+        # Example
+        # Using 70% autoextend threshold and 20% autoextend size, when a 1G
+        # snapshot exceeds 700M, it is extended to 1.2G, and when it exceeds
+        # 840M, it is extended to 1.44G:
+        # snapshot_autoextend_threshold = 70
+        #
+        snapshot_autoextend_threshold = 70
+
+        # Configuration option activation/snapshot_autoextend_percent.
+        # Auto-extending a snapshot adds this percent extra space.
+        # The amount of additional space added to a snapshot is this
+        # percent of its current size.
+        #
+        # Example
+        # Using 70% autoextend threshold and 20% autoextend size, when a 1G
+        # snapshot exceeds 700M, it is extended to 1.2G, and when it exceeds
+        # 840M, it is extended to 1.44G:
+        # snapshot_autoextend_percent = 20
+        #
+        snapshot_autoextend_percent = 50
+For this article I will use above values
+
+Next again we need to start from scratch which means create a new snapshot volume
+
+# lvcreate -L 1G -s -n snap_data /dev/system/data
+Now lets again try to fill up the /data partition with some more data more than 1G
+
+First attempt I will create dummy file with 512MB
+
+# dd if=/dev/zero of=/data/dummy_file2 bs=512M count=1 oflag=dsync
+1+0 records in
+1+0 records out
+536870912 bytes (537 MB) copied, 16.3479 s, 32.8 MB/s
+Lets check the snapshot volume size, since the snapshot volume was 1G it easily was able
+to afford this change without extending its volume size
+
+# lvs
+  LV        VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data      system owi-aos---  2.00g
+  mgtserv   system -wi-ao----  2.00g
+  opt       system -wi-ao----  2.00g
+  root      system -wi-ao----  2.00g
+  snap_data system swi-a-s---  1.00g      data   50.21
+Next lets create one more dummy file with additional 512M of data
+
+# dd if=/dev/zero of=/data/dummy_file bs=512M count=1 oflag=dsync
+1+0 records in
+1+0 records out
+536870912 bytes (537 MB) copied, 28.1028 s, 19.1 MB/s
+Now lets check the lvs status for snap_data, as you see the volume size increased to 1.5GB
+since we had asked lvm to extend to 50% if the threshold is reached
+
+# lvs
+  LV        VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data      system owi-aos---  2.00g
+  mgtserv   system -wi-ao----  2.00g
+  opt       system -wi-ao----  2.00g
+  root      system -wi-ao----  2.00g
+  snap_data system swi-a-s---  1.50g      data   66.94
+  swap      system -wi-ao----  4.00g
+  tmp       system -wi-ao---- 12.00g
+  var       system -wi-ao----  2.00g
+So this worked perfectly. But make sure the origin data size doesnot increases more
+than 1.5GB of rlse the snapshot will again get corrupted
+
+ 
+
+Restore or Merge or Commit Snapshot
+Next once you are done it is time to restore your snapshot.
+
+IMPORTANT NOTE:
+Before merging the snapshot make sure that the origin source is in unmounted state or
+else the merging will be postponed for a pending activation of the logical volume.
+Below are examples for both the scenario if the origin source is in mounted state
+
+To merge the snapshot use the below command
+
+# lvconvert --merge /dev/system/snap_data
+  Can't merge until origin volume is closed.
+  Merging of snapshot system/snap_data will occur on next activation of system/data.
+Since /data partition is in mounted state the snapshot merge failed, to perform this
+merge you have to perform manual lvm activation.
+
+Unmount the ‘data’ partition
+
+# umount /data/
+De-activate the data partition
+
+# lvchange -an  /dev/system/data
+Re-activate the same
+
+# lvchange -ay  /dev/system/data
+Now validate you content of ‘data’ partition.
+
+# ls -l /data/
+total 524320
+drwxr-xr-x 2 root root      4096 Sep 13 03:24 dir1
+drwxr-xr-x 2 root root      4096 Sep 13 03:24 dir2
+drwxr-xr-x 2 root root      4096 Sep 13 03:24 dir3
+-rw-r--r-- 1 root root         0 Sep 13 03:24 file1
+-rw-r--r-- 1 root root         0 Sep 13 03:24 file2
+-rw-r--r-- 1 root root         0 Sep 13 03:24 file3
+drwx------ 2 root root     16384 Sep 13 03:17 lost+found
+NOTE:
+If for some reason you cannot perform this re-activation, then this snapshot
+merge will happen during the next reboot of the node
+If the origin is in un-mounted state
+
+# lvconvert --merge /dev/system/snap_data
+  Merging of volume system/snap_data started.
+  data: Merged: 33.20%
+  data: Merged: 54.44%
+  data: Merged: 75.88%
+  data: Merged: 98.10%
+  data: Merged: 100.00%
+On another terminal if you check we can see that the data partition has “O” attribute
+which means snapshot is merging with origin
+
+# lvs
+  LV        VG     Attr       LSize  Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
+  data      system Owi-a-s---  2.00g             49.74
+  mgtserv   system -wi-ao----  2.00g
+  opt       system -wi-ao----  2.00g
+  root      system -wi-ao----  2.00g
+  swap      system -wi-ao----  4.00g
+  tmp       system -wi-ao---- 12.00g
+  var       system -wi-ao----  2.00g
+and you are done here, our ‘data’ partition is back to its original state
+
+# ls -l /data/
+total 524320
+drwxr-xr-x 2 root root      4096 Sep 13 03:24 dir1
+drwxr-xr-x 2 root root      4096 Sep 13 03:24 dir2
+drwxr-xr-x 2 root root      4096 Sep 13 03:24 dir3
+-rw-r--r-- 1 root root         0 Sep 13 03:24 file1
+-rw-r--r-- 1 root root         0 Sep 13 03:24 file2
+-rw-r--r-- 1 root root         0 Sep 13 03:24 file3
+drwx------ 2 root root     16384 Sep 13 03:17 lost+found
+I hope the article was useful.

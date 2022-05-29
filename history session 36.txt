@@ -1,0 +1,165 @@
+    1  ip a
+    2  cat /etc/fstab 
+    3  clear
+    4  lsblk
+    5  clear
+    6  fdisk -l /dev/sda
+    7  clear
+    8  fdisk /dev/sda
+    9  partprobe 
+   10  clear
+   11  lsblk
+   12  clear
+   13  pvcreate /dev/sda1 /dev/sda2
+   14  clear
+   15  pvs
+   16  clear
+   17  vgcreate vg1 /dev/sda1
+   18  vgcreate vg2 /dev/sda2
+   19  vgs
+   20  clear
+   21  lvcreate -l 1000 lv1 vg1
+   22  clear
+   23  lvcreate -l 1000 -n lv1 vg1
+   24  lvs
+   25  clear
+   26  vgdisplay 
+   27  clear
+   28  lvcreate -l 1000 -n lv2 vg2
+   29  lvs
+   30  clear
+   31  mkfs.ext4 /dev/vg1/lv1 
+   32  clear
+   33  mkfs.xfs /dev/vg2/lv2 
+   34  clear
+   35  lsblk -f
+   36  clear
+   37  mkdir /test1
+   38  mkdir /test2
+   39  clear
+   40  mount /dev/vg1/lv1 /test1
+   41  mount /dev/vg2/lv2 /test2
+   42  clear
+   43  df -hT
+   44  clear
+   45  cd /test1
+   46  touch {1..10}
+   47  ll
+   48  clear
+   49  cal > cal.txt
+   50  cat cal.txt 
+   51  mkdir aa bb cc dd
+   52  clear
+   53  ll
+   54  clear
+   55  cd /test2
+   56  touch {11..20}
+   57  ll
+   58  clear
+   59  cal > cal.txt
+   60  cat cal.txt 
+   61  clear
+   62  mkdir ee ff gg hh
+   63  ll
+   64  clear
+   65  cd
+   66  clear
+   67  umount /test*
+   68  df -hT
+   69  clear
+   70  lvscan 
+   71  clear
+   72  vgchange -an vg2
+   73  lvscan 
+   74  clear
+   75  vgs
+   76  lvs
+   77  clear
+   78  vgmerge vg1 vg2
+   79  vgs
+   80  clear
+   81  lvs
+   82  clear
+   83  lvscan 
+   84  clear
+   85  lvchange -ay /dev/vg1/lv2
+   86  lvscan 
+   87  clear
+   88  lsblk 
+   89  clear
+   90  mount /dev/vg1/lv1 /test1
+   91  mount /dev/vg1/lv2 /test2
+   92  df -hT
+   93  clear
+   94  cd /test1
+   95  ll
+   96  cat cal.txt 
+   97  clear
+   98  cd /test2
+   99  ll
+  100  clear
+  101  cat cal.txt 
+  102  clear
+  103  cd
+  104  umount /test*
+  105  clear
+  106  df -hT
+  107  clear
+  108  pvs
+  109  clear
+  110  vgchange -an vg1
+  111  lvscan
+  112  clear
+  113  vgs
+  114  lvs
+  115  clear
+  116  vgsplit vg1 vg2 /dev/sda2
+  117  vgs
+  118  clear
+  119  lvscan 
+  120  clear
+  121  vgchange -ay vg1 vg2
+  122  lvscan 
+  123  clear
+  124  mount /dev/vg1/lv1 /test1
+  125  mount /dev/vg2/lv2 /test2
+  126  df -hT
+  127  clear
+  128  cd /test1
+  129  ll
+  130  clear
+  131  cat cal.txt 
+  132  clear
+  133  cd /test2
+  134  ll
+  135  cat ca
+  136  cat cal.txt 
+  137  clear
+  138  cd
+  139  lsblk
+  140  clear
+  141  vgcfgrestore --list
+  142  vgcfgrestore --l
+  143  clear
+  144  cd /etc/lvm/archive/
+  145  ll
+  146  clear
+  147  vgcfgrestore --list vg1
+  148  clear
+  149  vgcfgrestore --list vg2
+  150  clear
+  151  cd 
+  152  init 0
+  153  lsblk
+  154  lvremove /dev/vg*
+  155  lsblk
+  156  vgremove vg* -y
+  157  vgremove vg* 
+  158  vgremove vg1
+  159  vgremove vg2
+  160  pvremove /dev/sda*
+  161  lsblk
+  162  fdisk /dev/sda
+  163  partprobe 
+  164  init 0
+  165  history > history_session36.txt

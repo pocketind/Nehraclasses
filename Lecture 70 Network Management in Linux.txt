@@ -1,0 +1,152 @@
+Network Management in Linux:
+-----------------------------
+Type of network connections:
+
+Host-Only: The VM will be assigned one IP, but it's only accessible by the box VM is running on. No other computers can access it.
+
+NAT: Just like your home network with a wireless router, the VM will be assigned in a separate subnet, like 192.168.6.1 is your host computer, and VM is 192.168.6.3, then your VM can access outside network like your host, but no outside access to your VM directly, it's protected.
+
+Bridged: Your VM will be in the same network as your host, if your host IP is 172.16.120.45 then your VM will be like 172.16.120.50. It can be accessed by all computers in your host network.
+
+----------
+A good starting point would be to check our devices:
+
+# nmcli dev status
+
+DEVICE      TYPE      STATE         CONNECTION 
+docker0     bridge    connected     docker0    
+virbr0      bridge    connected     virbr0     
+enp0s3      ethernet  connected     enp0s3     
+virbr0-nic  ethernet  disconnected  --         
+lo          loopback  unmanaged     --   
+
+# nmcli device show
+
+# nmcli connection show
+
+# ifconfig
+
+# cd /etc/sysconfig/network-scripts/
+
+# ls
+
+# cat ifcfg-ens160
+
+We realize that some properties have different values and some others don’t exist if it isn’t necessary. Let’s have a quick look to most important of them.
+
+TYPE, we have ethernet type here. We could have wifi, team, bond and others.
+DEVICE, the name of the network device which is associated with this profile.
+BOOTPROTO, if it has value “dhcp” then our connection profile takes dynamic IP from dhcp server, if it has value “none” then it takes no dynamic IP and probably whe assign a static IP.
+IPADDR, is the static IP we assign to our profile.
+PREFIX, the subnet mask. A value of 24 means 255.255.255.0. You can understand better the subnet mask if you write down its binary format. For example values of 16, 24, 26 means that the first 16, 24 or 26 bits respectively are 1 and the rest 0, defining exactly what the network address is and what is the range of ip which can be assigned.
+GATEWAY, the gateway IP.
+DNS1, DNS2, two dns servers we want to use.
+ONBOOT, if it has value “yes” it means, that on boot our computer will read this profile and try to assign it to its device.
+
+
+# nmcli con show
+
+If you want to see only the active connections, type:
+
+# nmcli con show -a
+
+You can use the auto-complete hitting Tab when you use nmcli, but is better to use minimal format of the command. Thus, the following commands are equal:
+
+# nmcli connection show
+
+# nmcli con show
+
+# nmcli c s
+
+If I check the ip addresses of my devices:
+
+# ip a
+
+# nmcli con down ens160 ; nmcli con up ens160
+
+# nmcli con show
+
+We can make our first connection profile. The minimum properties we must define are type, ifname and con-name:
+
+type – for the type of connection.
+ifname – for the device name which is assigned our connection.
+con-name – for the connection name.
+
+Let’s make a new ethernet connection with name Myhome1, assigned to device enp0s3:
+
+# nmcli con add type ethernet con-name Myhome1 ifname enp0s3
+
+Check its configuration:
+
+# cat ifcfg-Myhome1
+
+As you can see it has BOOTPROTO=dhcp, because we didn’t give any static ip address.
+
+We can modify any connection with the “nmcli con mod“ command. However if you modify a dhcp connection and change it to static don’t forget to change its “ipv4.method” from “auto” to “manual”. Otherwise you will end up with two IP addresses: one from dhcp server and the static one.
+
+Let’s make a new Ethernet connection profile with name static2, which will be assigned to device enp0s3, with static IP 192.168.1.50, subnet mask 255.255.255.0=24 and gateway 192.168.1.1.
+
+# nmcli con add type ethernet con-name static2 ifname enp0s3 ip4 192.168.0.50/24 gw4 192.168.0.1
+
+Check its configuration:
+
+# cat ifcfg-static2
+
+Let’s modify the last connection profile and add two dns servers.
+
+# nmcli con mod static2 ipv4.dns “8.8.8.8 8.8.4.4”
+
+There is something here you must pay attention: the properties for IP address and gateway have different names when you add and when you modify a connection. When you add connections you use “ip4” and “gw4”, while when you modify them you use “ipv4” and “gwv4”.
+
+Now let’s bring up this connection profile:
+
+# nmcli con down static1 ; nmcli con up static2
+
+# ip a
+
+# nmcli con show static2
+
+when you bring down a connection profile, the NetworkManager searches for another connection profile and brings it up automatically. (I leave it as exercise to check it). If you don’t want your connection profile to autoconnect:
+
+# nmcli con mod static2 connection.autoconnect no
+
+The last exercise is very usefull: you made a connection profile but you want it to be used by specific users. It’s good to classify your users!
+
+We let only user stella to use this profile:
+
+# nmcli con mod static2 connection.permissions stella
+
+If you want to give permissions to more than one users, you must type user:user1,user2 without blank space between them:
+
+# nmcli con mod static2 connection.permissions user:stella,john
+
+If you login as another user you can’t bring “up” this connection profile:
+
+# nmcli con show
+
+# nmcli con up static2
+
+# ls /etc/sysconfig/network-scripts
+
+Reload all connection files from disk. NetworkManager does not monitor changes to connection files by default. So you need to use this command in order to tell NetworkManager to re-read the connection profiles from disk when a change was made to them.
+
+# nmcli con reload
+
+Interactively add/edit a connection
+You can use nmcli con edit to Edit an existing connection or add a new one, using an interactive editor. In the below example we will edit eth1's IP Address
+
+# nmcli con edit  eth1
+
+Remove single/multiple DNS Server from connection
+As it is understood, with + we append so with - we remove single/multiple entries of DNS Server from the interface connection using nmcli.
+
+# nmcli con mod eth1 -ipv4.dns 8.2.2.2,8.8.8.8
+
+Delete connection
+lastly in nmcli command examples, you can delete all type of available connection using "nmcli con del <ifname>"
+
+# nmcli con del bond-mybond0 bond-slave-eth1 bond-slave-eth2
+
+
+-------------------
+# nmcli connection modify ens33 ipv4.addresses 192.168.0.150/24 ipv4.method manual

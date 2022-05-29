@@ -1,0 +1,119 @@
+    1  init 0
+    2  ip a
+    3  clear
+    4  cat /etc/fstab 
+    5  clear
+    6  lsblk
+    7  clear
+    8  lsblk
+    9  clear
+   10  fdisk -l /dev/sda
+   11  clear
+   12  fdisk /dev/sda
+   13  partprobe 
+   14  clear
+   15  lsblk
+   16  clear
+   17  fdisk -l
+   18  clear
+   19  pvcreate /dev/sda1
+   20  pvs
+   21  clear
+   22  vgcreate VolGrp /dev/sda1 
+   23  vgs
+   24  clear
+   25  vgdisplay 
+   26  clear
+   27  lvcreate -l 2000 LogVol VolGrp
+   28  lvcreate -l 2000 -n LogVol VolGrp
+   29  clear
+   30  lvs
+   31  clear
+   32  mkfs.ext4 /dev/VolGrp/LogVol 
+   33  clear
+   34  blkid /dev/VolGrp/LogVol
+   35  clear
+   36  mkdir /data
+   37  clear
+   38  mount /dev/VolGrp/LogVol /data/
+   39  df -hT
+   40  clear
+   41  cd /data/
+   42  touch {a..z}
+   43  mkdir aa bb cc
+   44  cal > cal.txt
+   45  echo Nehra Classes Are Awesome > nehra.txt
+   46  clear
+   47  ll
+   48  clear
+   49  lvs
+   50  vgs
+   51  clear
+   52  lvscan
+   53  clear
+   54  cd
+   55  umount /data
+   56  clear
+   57  lsblk
+   58  clear
+   59  df -hT
+   60  clear
+   61  vgchange -an VolGrp 
+   62  lvscan
+   63  lvs
+   64  clear
+   65  vgexport VolGrp 
+   66  lvscan
+   67  vgs
+   68  lvs
+   69  clear
+   70  init 0
+   Power On the other machine
+    1  init 0
+    2  ip a
+    3  clear
+    4  lsblk
+    5  clear
+    6  pvs
+    7  lvscan
+    8  vgs
+    9  clear
+   10  pvscan
+   11  vgs
+   12  clear
+   13  vgimport VolGrp 
+   14  vgs
+   15  clear
+   16  lvscan
+   17  lvs
+   18  clear
+   19  vgchange -ay VolGrp 
+   20  vgs
+   21  lvs
+   22  clear
+   23  mkdir /data
+   24  clear
+   25  mount /dev/VolGrp/LogVol /data/
+   26  df -hT
+   27  clear
+   28  cd /data/
+   29  ll
+   30  clear
+   31  cat nehra.txt 
+   32  cat cal.txt 
+   33  clear
+   34  cd 
+   35  umount /data
+   36  blkid /dev/VolGrp/LogVol
+   37  clear
+   38  vim /etc/fstab 
+   39  cat /etc/fstab | grep Vol
+   40  cat /etc/fstab | grep /data
+   41  clear
+   42  df -hT
+   43  clear
+   44  mount -a
+   45  df -hT
+   46  clear
+   47  init 0
+

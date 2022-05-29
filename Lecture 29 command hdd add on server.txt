@@ -1,0 +1,3 @@
+ls /sys/class/scsi_host/ | while read host ; do echo "- - -" > /sys/class/scsi_host/$host/scan ; done
+
+for x in ls /sys/class/scsi_host/ ; do echo "-----$x Scanned-----"; echo "- - -" > /sys/class/scsi_host/$x/scan ; done 
